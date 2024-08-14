@@ -1,7 +1,7 @@
 variables:
   REGION: <us-central1-c?
   CLUSTER_NAME: <cluster-name>
-  PCC_URL: <Prisma Cloud Compute URL>
+  PCC_URL: <Prisma Cloud Compute Path to Console URL>
   PCC_HOSTNAME: us-west1.cloud.twistlock.com
   GCP_PROJECT_NAME: <gcp-project-name>
 
