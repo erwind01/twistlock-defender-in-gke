@@ -1,0 +1,39 @@
+variables:
+  REGION: <us-central1-c?
+  CLUSTER_NAME: <cluster-name>
+  PCC_URL: <Prisma Cloud Compute URL>
+  PCC_HOSTNAME: us-west1.cloud.twistlock.com
+  GCP_PROJECT_NAME: <gcp-project-name>
+
+stages:
+   - test
+   - deploy
+test:
+  stage: test
+  script:
+      - echo "We are testing pipeline schedule" 
+
+  rules:
+    - if: $TRIGGER_CONTEXT == "pipeline_schedule"
+deploy:
+  stage: deploy
+  tags: 
+    - ee-runner
+  environment: production
+  image:
+    name: google/cloud-sdk
+    entrypoint: [""]
+  only:
+   - main
+   - tags
+  # before_script:
+  script:
+    #map service account token from variable
+    - gcloud auth activate-service-account --key-file=$GCP_KEY
+    - gcloud config set project $GCP_PROJECT_NAME
+    - gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
+    - curl -L -u $PCC_USER:$PCC_PASS $PCC_URL/api/v1/util/twistcli > twistcli; chmod a+x twistcli;
+    - ./twistcli defender export kubernetes --address $PCC_URL --user $PCC_USER --password $PCC_PASS --cluster-address $PCC_HOSTNAME --container-runtime 'crio'
+    - kubectl delete ns twistlock
+    - kubectl create ns twistlock
+    - kubectl apply -f defender.yaml
